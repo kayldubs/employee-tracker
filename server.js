@@ -1,6 +1,6 @@
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
-const table = require("console.table");
+require("console.table");
 const express = require('express');
 
 
@@ -16,8 +16,9 @@ app.listen(PORT, () => {
 
 const db = mysql.createConnection({
     host: 'localhost',
-    port: 3001,
+    port: 3306,
     user: 'root',
+    password:'Kdubbies3000!',
     database: 'employeesDB'
 },
 console.log('Connected to the employee database.')
@@ -95,7 +96,7 @@ function viewEmployee() {
     db.query(query, function (err, res) {
       if (err) throw err;
   
-      table(res);
+      console.table(res);
       console.log("Employees viewed!\n");
   
       runApp();
@@ -117,7 +118,7 @@ function viewEmployee() {
       const departmentChoices = res.map(data => ({
         value: data.id, name: data.name
       }));
-      table(res);
+      console.table(res);
       console.log("Department view succeed!\n");
       promptDepartment(departmentChoices);
     });
@@ -149,7 +150,7 @@ function viewEmployee() {
         db.query(query, answer.departmentId, function (err, res) {
           if (err) throw err;
   
-          table("response ", res);
+          console.table("response ", res);
           console.log(res.affectedRows + "Employees are viewed!\n");
   
           runApp();
@@ -171,7 +172,7 @@ function viewEmployee() {
         value: id, title: `${title}`, salary: `${salary}`
       }));
   
-      table(res);
+      console.table(res);
       console.log("RoleToInsert!");
   
       promptInsert(roleChoices);
@@ -212,7 +213,7 @@ function viewEmployee() {
           function (err, res) {
             if (err) throw err;
   
-            table(res);
+            console.table(res);
             console.log(res.insertedRows + "Inserted successfully!\n");
   
             runApp();
@@ -230,7 +231,7 @@ function viewEmployee() {
       const deleteEmployeeChoices = res.map(({ id, first_name, last_name }) => ({
         value: id, name: `${id} ${first_name} ${last_name}`
       }));
-      table(res);
+      console.table(res);
       console.log("ArrayToDelete!\n");
       promptDelete(deleteEmployeeChoices);
     });
@@ -251,7 +252,7 @@ function viewEmployee() {
         var query = `DELETE FROM employee WHERE ?`;
         db.query(query, { id: answer.employeeId }, function (err, res) {
           if (err) throw err;
-          table(res);
+          console.table(res);
           console.log(res.affectedRows + "Deleted!\n");
           runApp();
         });
@@ -279,7 +280,7 @@ function viewEmployee() {
       const employeeChoices = res.map(({ id, first_name, last_name }) => ({
         value: id, name: `${first_name} ${last_name}`      
       }));
-      table(res);
+      console.table(res);
       console.log("employeeArray To Update!\n")
       roleArray(employeeChoices);
     });
@@ -298,7 +299,7 @@ function viewEmployee() {
       roleChoices = res.map(({ id, title, salary }) => ({
         value: id, title: `${title}`, salary: `${salary}`      
       }));
-      table(res);
+      console.table(res);
       console.log("roleArray to Update!\n")
   
       promptEmployeeRole(employeeChoices, roleChoices);
@@ -332,7 +333,7 @@ function viewEmployee() {
           function (err, res) {
             if (err) throw err;
   
-            table(res);
+            console.table(res);
             console.log(res.affectedRows + "Updated successfully!");
   
             runApp();
@@ -357,7 +358,7 @@ function viewEmployee() {
         value: id, name: `${id} ${name}`
       }));
   
-      table(res);
+      console.table(res);
       console.log("Department array!");
   
       promptAddRole(departmentChoices);
@@ -397,7 +398,7 @@ function viewEmployee() {
           function (err, res) {
             if (err) throw err;
   
-            table(res);
+            console.table(res);
             console.log("Role Inserted!");
   
             runApp();
