@@ -1,17 +1,18 @@
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
 const table = require("console.table");
-// const express = require('express');
+const express = require('express');
 
-// const PORT = process.env.PORT || 3001;
-// const app = express();
 
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
+const PORT = process.env.PORT || 3001;
+const app = express();
 
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 const db = mysql.createConnection({
     host: 'localhost',
@@ -22,20 +23,20 @@ const db = mysql.createConnection({
 console.log('Connected to the employee database.')
 );
 
-db.connect(function (err) {
-    if (err) throw err;
-    console.log("connected as id " + connection.threadId);
-    console.log(`
-    ╔═══╗─────╔╗──────────────╔═╗╔═╗
-    ║╔══╝─────║║──────────────║║╚╝║║
-    ║╚══╦╗╔╦══╣║╔══╦╗─╔╦══╦══╗║╔╗╔╗╠══╦═╗╔══╦══╦══╦═╗
-    ║╔══╣╚╝║╔╗║║║╔╗║║─║║║═╣║═╣║║║║║║╔╗║╔╗╣╔╗║╔╗║║═╣╔╝
-    ║╚══╣║║║╚╝║╚╣╚╝║╚═╝║║═╣║═╣║║║║║║╔╗║║║║╔╗║╚╝║║═╣║
-    ╚═══╩╩╩╣╔═╩═╩══╩═╗╔╩══╩══╝╚╝╚╝╚╩╝╚╩╝╚╩╝╚╩═╗╠══╩╝
-    ───────║║──────╔═╝║─────────────────────╔═╝║
-    ───────╚╝──────╚══╝─────────────────────╚══╝`)
+// db.connect(function (err) {
+//     if (err) throw err;
+//     console.log("connected as id " + db.threadId);
+//     console.log(`
+//     ╔═══╗─────╔╗──────────────╔═╗╔═╗
+//     ║╔══╝─────║║──────────────║║╚╝║║
+//     ║╚══╦╗╔╦══╣║╔══╦╗─╔╦══╦══╗║╔╗╔╗╠══╦═╗╔══╦══╦══╦═╗
+//     ║╔══╣╚╝║╔╗║║║╔╗║║─║║║═╣║═╣║║║║║║╔╗║╔╗╣╔╗║╔╗║║═╣╔╝
+//     ║╚══╣║║║╚╝║╚╣╚╝║╚═╝║║═╣║═╣║║║║║║╔╗║║║║╔╗║╚╝║║═╣║
+//     ╚═══╩╩╩╣╔═╩═╩══╩═╗╔╩══╩══╝╚╝╚╝╚╩╝╚╩╝╚╩╝╚╩═╗╠══╩╝
+//     ───────║║──────╔═╝║─────────────────────╔═╝║
+//     ───────╚╝──────╚══╝─────────────────────╚══╝`)
     runApp();
-});
+// });
 
 function runApp() {
     inquirer
@@ -73,7 +74,7 @@ function runApp() {
             addRole();
             break;
           case "End":
-            connection.end();
+            db.end();
             break;
         }
       });
@@ -91,7 +92,7 @@ function viewEmployee() {
     ON d.id = r.department_id
     LEFT JOIN employee m
       ON m.id = e.manager_id`
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
   
       table(res);
@@ -111,7 +112,7 @@ function viewEmployee() {
     LEFT JOIN department d
     ON d.id = r.department_id
     GROUP BY d.id, d.name`
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
       const departmentChoices = res.map(data => ({
         value: data.id, name: data.name
@@ -145,7 +146,7 @@ function viewEmployee() {
     ON d.id = r.department_id
     WHERE d.id = ?`
   
-        connection.query(query, answer.departmentId, function (err, res) {
+        db.query(query, answer.departmentId, function (err, res) {
           if (err) throw err;
   
           table("response ", res);
@@ -163,7 +164,7 @@ function viewEmployee() {
       `SELECT r.id, r.title, r.salary 
         FROM role r`
   
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
   
       const roleChoices = res.map(({ id, title, salary }) => ({
@@ -201,7 +202,7 @@ function viewEmployee() {
       .then(function (answer) {
         console.log(answer);
         var query = `INSERT INTO employee SET ?`
-        connection.query(query,
+        db.query(query,
           {
             first_name: answer.first_name,
             last_name: answer.last_name,
@@ -224,7 +225,7 @@ function viewEmployee() {
     var query =
       `SELECT e.id, e.first_name, e.last_name
         FROM employee e`
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
       const deleteEmployeeChoices = res.map(({ id, first_name, last_name }) => ({
         value: id, name: `${id} ${first_name} ${last_name}`
@@ -248,7 +249,7 @@ function viewEmployee() {
       ])
       .then(function (answer) {
         var query = `DELETE FROM employee WHERE ?`;
-        connection.query(query, { id: answer.employeeId }, function (err, res) {
+        db.query(query, { id: answer.employeeId }, function (err, res) {
           if (err) throw err;
           table(res);
           console.log(res.affectedRows + "Deleted!\n");
@@ -273,7 +274,7 @@ function viewEmployee() {
     JOIN employee m
       ON m.id = e.manager_id`
   
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
       const employeeChoices = res.map(({ id, first_name, last_name }) => ({
         value: id, name: `${first_name} ${last_name}`      
@@ -291,7 +292,7 @@ function viewEmployee() {
     FROM role r`
     let roleChoices;
 
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
   
       roleChoices = res.map(({ id, title, salary }) => ({
@@ -324,7 +325,7 @@ function viewEmployee() {
       .then(function (answer) {
   
         var query = `UPDATE employee SET role_id = ? WHERE id = ?`
-        connection.query(query,
+        db.query(query,
           [ answer.roleId,  
             answer.employeeId
           ],
@@ -350,7 +351,7 @@ function viewEmployee() {
       ON d.id = r.department_id
       GROUP BY d.id, d.name`
   
-    connection.query(query, function (err, res) {
+    db.query(query, function (err, res) {
       if (err) throw err;
       const departmentChoices = res.map(({ id, name }) => ({
         value: id, name: `${id} ${name}`
@@ -388,7 +389,7 @@ function viewEmployee() {
   
         var query = `INSERT INTO role SET ?`
   
-        connection.query(query, {
+        db.query(query, {
           title: answer.title,
           salary: answer.salary,
           department_id: answer.departmentId

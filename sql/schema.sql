@@ -1,4 +1,7 @@
 DROP DATABASE IF EXISTS employeesDB;
+-- DROP TABLE IF EXISTS department;
+-- DROP TABLE IF EXISTS employee;
+-- DROP TABLE IF EXISTS role;
 
 CREATE DATABASE employeesDB;
 
@@ -13,7 +16,7 @@ CREATE TABLE department (
 CREATE TABLE role (
   id INT NOT NULL AUTO_INCREMENT,
   title VARCHAR(45) NULL,
-  salary DECIMAL(10.3) NULL,
+  salary DECIMAL(10.3) NULL, 
   department_id INT NULL,
   PRIMARY KEY (id)
 );
