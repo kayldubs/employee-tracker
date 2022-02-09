@@ -3,7 +3,7 @@ const inquirer = require("inquirer");
 require("console.table");
 const express = require('express');
 
-
+//connect server 
 const PORT = process.env.PORT || 3001;
 const app = express();
 
@@ -13,7 +13,7 @@ app.use(express.json());
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
+//create database 
 const db = mysql.createConnection({
     host: 'localhost',
     port: 3306,
@@ -24,20 +24,9 @@ const db = mysql.createConnection({
 console.log('Connected to the employee database.')
 );
 
-// db.connect(function (err) {
-//     if (err) throw err;
-//     console.log("connected as id " + db.threadId);
-//     console.log(`
-//     ╔═══╗─────╔╗──────────────╔═╗╔═╗
-//     ║╔══╝─────║║──────────────║║╚╝║║
-//     ║╚══╦╗╔╦══╣║╔══╦╗─╔╦══╦══╗║╔╗╔╗╠══╦═╗╔══╦══╦══╦═╗
-//     ║╔══╣╚╝║╔╗║║║╔╗║║─║║║═╣║═╣║║║║║║╔╗║╔╗╣╔╗║╔╗║║═╣╔╝
-//     ║╚══╣║║║╚╝║╚╣╚╝║╚═╝║║═╣║═╣║║║║║║╔╗║║║║╔╗║╚╝║║═╣║
-//     ╚═══╩╩╩╣╔═╩═╩══╩═╗╔╩══╩══╝╚╝╚╝╚╩╝╚╩╝╚╩╝╚╩═╗╠══╩╝
-//     ───────║║──────╔═╝║─────────────────────╔═╝║
-//     ───────╚╝──────╚══╝─────────────────────╚══╝`)
-    runApp();
-// });
+//runs the program as parent function 
+runApp();
+
 
 function runApp() {
     inquirer
@@ -54,7 +43,7 @@ function runApp() {
         "Add Role",
         "End"]
     })
-    .then(function ({ task }) {
+    .then(function ({ task }) {   //funnels in other functions to be defined when selected
         switch (task) {
           case "View Employees":
             viewEmployee();
@@ -80,19 +69,11 @@ function runApp() {
         }
       });
 }
-
+//shows all employees 
 function viewEmployee() {
     console.log("Viewing employees\n");
   
     var query =
-      `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
-    FROM employee e
-    LEFT JOIN role r
-      ON e.role_id = r.id
-    LEFT JOIN department d
-    ON d.id = r.department_id
-    LEFT JOIN employee m
-      ON m.id = e.manager_id`
     db.query(query, function (err, res) {
       if (err) throw err;
   
@@ -102,17 +83,10 @@ function viewEmployee() {
       runApp();
     });
   }
-
+  //filter by department 
   function viewEmployeeByDepartment() {
     console.log("Viewing employees by department\n");
     var query =
-      `SELECT d.id, d.name, r.salary AS budget
-    FROM employee e
-    LEFT JOIN role r
-      ON e.role_id = r.id
-    LEFT JOIN department d
-    ON d.id = r.department_id
-    GROUP BY d.id, d.name`
     db.query(query, function (err, res) {
       if (err) throw err;
       const departmentChoices = res.map(data => ({
@@ -123,7 +97,7 @@ function viewEmployee() {
       promptDepartment(departmentChoices);
     });
   }
-
+//department choices
   function promptDepartment(departmentChoices) {
 
     inquirer
@@ -131,7 +105,7 @@ function viewEmployee() {
         {
           type: "list",
           name: "departmentId",
-          message: "Which department would you choose?",
+          message: "Select a department",
           choices: departmentChoices
         }
       ])
@@ -139,14 +113,6 @@ function viewEmployee() {
         console.log("answer ", answer.departmentId);
   
         var query =
-          `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department 
-    FROM employee e
-    JOIN role r
-      ON e.role_id = r.id
-    JOIN department d
-    ON d.id = r.department_id
-    WHERE d.id = ?`
-  
         db.query(query, answer.departmentId, function (err, res) {
           if (err) throw err;
   
@@ -157,13 +123,11 @@ function viewEmployee() {
         });
       });
   }
-  
+  // adds empolyee and defines the needed information for input
   function addEmployee() {
     console.log("Inserting an employee!")
   
     var query =
-      `SELECT r.id, r.title, r.salary 
-        FROM role r`
   
     db.query(query, function (err, res) {
       if (err) throw err;
@@ -178,7 +142,7 @@ function viewEmployee() {
       promptInsert(roleChoices);
     });
   }
-  
+  //Prompts for user to answer when adding a new employee
   function promptInsert(roleChoices) {
   
     inquirer
@@ -196,7 +160,7 @@ function viewEmployee() {
         {
           type: "list",
           name: "roleId",
-          message: "What is the employee's role?",
+          message: "What is the employee's job title?",
           choices: roleChoices
         },
       ])
@@ -224,8 +188,6 @@ function viewEmployee() {
   function removeEmployees() {
     console.log("Deleting an employee");
     var query =
-      `SELECT e.id, e.first_name, e.last_name
-        FROM employee e`
     db.query(query, function (err, res) {
       if (err) throw err;
       const deleteEmployeeChoices = res.map(({ id, first_name, last_name }) => ({
@@ -244,7 +206,7 @@ function viewEmployee() {
         {
           type: "list",
           name: "employeeId",
-          message: "Which employee do you want to remove?",
+          message: "Select what team member are you deleting?",
           choices: deleteEmployeeChoices
         }
       ])
@@ -266,15 +228,6 @@ function viewEmployee() {
   function employeeArray() {
     console.log("Updating an employee");
     var query =
-      `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
-    FROM employee e
-    JOIN role r
-      ON e.role_id = r.id
-    JOIN department d
-    ON d.id = r.department_id
-    JOIN employee m
-      ON m.id = e.manager_id`
-  
     db.query(query, function (err, res) {
       if (err) throw err;
       const employeeChoices = res.map(({ id, first_name, last_name }) => ({
@@ -313,13 +266,13 @@ function viewEmployee() {
         {
           type: "list",
           name: "employeeId",
-          message: "Which employee do you want to set with the role?",
+          message: "Who is the team member that you want to update?",
           choices: employeeChoices
         },
         {
           type: "list",
           name: "roleId",
-          message: "Which role do you want to update?",
+          message: "What role is changing?",
           choices: roleChoices
         },
       ])
@@ -344,13 +297,6 @@ function viewEmployee() {
   function addRole() {
   
     var query =
-      `SELECT d.id, d.name, r.salary AS budget
-      FROM employee e
-      JOIN role r
-      ON e.role_id = r.id
-      JOIN department d
-      ON d.id = r.department_id
-      GROUP BY d.id, d.name`
   
     db.query(query, function (err, res) {
       if (err) throw err;
